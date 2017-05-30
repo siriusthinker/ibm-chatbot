@@ -33,7 +33,12 @@ var Api = (function() {
       payloadToWatson.input = {
         text: text
       };
+    } else {
+      payloadToWatson.input = {
+        text: 'init'
+      };
     }
+
     if (context) {
       payloadToWatson.context = context;
     }
@@ -52,7 +57,11 @@ var Api = (function() {
     // Stored in variable (publicly visible through Api.getRequestPayload)
     // to be used throughout the application
     if (Object.getOwnPropertyNames(payloadToWatson).length !== 0) {
-      Api.setRequestPayload(params);
+      if(text) {
+        Api.setRequestPayload(params);
+      } else {
+        Api.setRequestPayload(JSON.stringify({}));
+      }
     }
 
     // Send request
