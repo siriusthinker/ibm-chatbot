@@ -19,12 +19,22 @@
 var express = require('express'); // app server
 var bodyParser = require('body-parser'); // parser for post requests
 var Conversation = require('watson-developer-cloud/conversation/v1'); // watson sdk
+var cloudant = require('cloudant');
+var CloudantConversationStore = require('./CloudantConversationStore');
 
 var app = express();
 
 // Bootstrap application settings
 app.use(express.static('./public')); // load UI from public folder
 app.use(bodyParser.json());
+
+var cloudantClient = cloudant({
+  url: process.env.CLOUDANT_URL,
+  plugin:'promises'
+});
+
+var conversationStore = new CloudantConversationStore(cloudantClient, process.env.CLOUDANT_DB_NAME);
+conversationStore.init();
 
 // Create the service wrapper
 var conversation = new Conversation({
