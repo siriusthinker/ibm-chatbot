@@ -19,8 +19,13 @@
 var express = require('express'); // app server
 var bodyParser = require('body-parser'); // parser for post requests
 var Conversation = require('watson-developer-cloud/conversation/v1'); // watson sdk
-var cloudant = require('cloudant');
-var CloudantConversationStore = require('./CloudantConversationStore');
+
+//// storage
+//var cloudant = require('cloudant');
+//var CloudantConversationStore = require('./CloudantConversationStore');
+
+// emailer
+var emailer = require('./Emailer');
 
 var app = express();
 
@@ -28,13 +33,13 @@ var app = express();
 app.use(express.static('./public')); // load UI from public folder
 app.use(bodyParser.json());
 
-var cloudantClient = cloudant({
-  url: process.env.CLOUDANT_URL,
-  plugin:'promises'
-});
+//var cloudantClient = cloudant({
+//  url: process.env.CLOUDANT_URL,
+//  plugin:'promises'
+//});
 
-var conversationStore = new CloudantConversationStore(cloudantClient, process.env.CLOUDANT_DB_NAME);
-conversationStore.init();
+//var conversationStore = new CloudantConversationStore(cloudantClient, process.env.CLOUDANT_DB_NAME);
+//conversationStore.init();
 
 // Create the service wrapper
 var conversation = new Conversation({
@@ -68,6 +73,18 @@ app.post('/api/message', function(req, res) {
       return res.status(err.code || 500).json(err);
     }
     return res.json(updateMessage(payload, data));
+  });
+});
+
+// Endpoint to be called from the client side
+// when sending email notifications
+app.post('/api/email', function(req, res) {
+
+  var payLoad = JSON.parse(JSON.stringify(req.body));
+  emailer.send({
+    to: process.env.EMAIL_TO,
+    subject: process.env.EMAIL_SUBJECT,
+    text: payLoad.text
   });
 });
 

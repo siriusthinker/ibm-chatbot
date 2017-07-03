@@ -118,6 +118,7 @@ var ConversationPanel = (function() {
     var textExists = (newPayload.input && newPayload.input.text)
       || (newPayload.output && newPayload.output.text);
     if (isUser !== null && textExists) {
+
       // Create new message DOM element
       var messageDivs = buildMessageDomElements(newPayload, isUser);
       var chatBoxElement = document.querySelector(settings.selectors.chatBox);
@@ -138,6 +139,17 @@ var ConversationPanel = (function() {
       });
       // Move chat to the most recent messages when new messages are added
       scrollToChatBottom();
+
+      // check if output returns no answer for the question
+      // email the bot admin that it detects an unanswered question
+      if (newPayload.output && newPayload.output.text) {
+        var no_answer = /I'm sorry, I don't understand your question/;
+        if (no_answer.test(newPayload.output.text[0])) {
+          Api.sendEmailNotifications({
+            text: newPayload.input.text
+          });
+        }
+      }
     }
   }
 

@@ -4,6 +4,7 @@ var Api = (function() {
   var requestPayload;
   var responsePayload;
   var messageEndpoint = '/api/message';
+  var emailEndpoint = '/api/email';
 
   // Publicly accessible methods defined
   return {
@@ -22,7 +23,10 @@ var Api = (function() {
     },
     setResponsePayload: function(newPayloadStr) {
       responsePayload = JSON.parse(newPayloadStr);
-    }
+    },
+
+    // send email notifications
+    sendEmailNotifications: sendEmailNotifications
   };
 
   // Send a message request to the server
@@ -63,6 +67,19 @@ var Api = (function() {
         Api.setRequestPayload(JSON.stringify({}));
       }
     }
+
+    // Send request
+    http.send(params);
+  }
+
+  // Send an email notification
+  function sendEmailNotifications(data) {
+    // Built http request
+    var http = new XMLHttpRequest();
+    http.open('POST', emailEndpoint, true);
+    http.setRequestHeader('Content-type', 'application/json');
+
+    var params = JSON.stringify(data);
 
     // Send request
     http.send(params);
