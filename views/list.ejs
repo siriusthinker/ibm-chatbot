@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Rubbish Questions List</title>
+
+    <!-- CSS (load bootstrap from a CDN) -->
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <style>
+        body    { padding-top:50px; }
+    </style>
+</head>
+<body class="container">
+
+    <header>
+    </header>
+
+    <main>
+        <h3>Rubbish Questions List</h3>
+        <ul>
+            <% rubbishes.forEach(function(rubbish) { %>
+                <li><%= rubbish.name %></li>
+            <% }); %>
+        </ul>
+    </main>
+
+    <footer>
+    </footer>
+
+</body>
+</html>

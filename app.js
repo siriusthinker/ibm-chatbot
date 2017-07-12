@@ -20,9 +20,9 @@ var express = require('express'); // app server
 var bodyParser = require('body-parser'); // parser for post requests
 var Conversation = require('watson-developer-cloud/conversation/v1'); // watson sdk
 
-//// storage
-//var cloudant = require('cloudant');
-//var CloudantConversationStore = require('./CloudantConversationStore');
+// storage
+var cloudant = require('cloudant');
+var CloudantConversationStore = require('./CloudantConversationStore');
 
 // emailer
 var emailer = require('./Emailer');
@@ -33,13 +33,17 @@ var app = express();
 app.use(express.static('./public')); // load UI from public folder
 app.use(bodyParser.json());
 
-//var cloudantClient = cloudant({
-//  url: process.env.CLOUDANT_URL,
-//  plugin:'promises'
-//});
+// use ejs templating
+app.set('view engine', 'ejs');
 
-//var conversationStore = new CloudantConversationStore(cloudantClient, process.env.CLOUDANT_DB_NAME);
-//conversationStore.init();
+// create new cloudant object and initialize
+var cloudantClient = cloudant({
+  url: process.env.CLOUDANT_URL,
+  plugin:'promises'
+});
+
+var conversationStore = new CloudantConversationStore(cloudantClient, process.env.CLOUDANT_DB_NAME);
+conversationStore.init();
 
 // Create the service wrapper
 var conversation = new Conversation({
@@ -81,11 +85,31 @@ app.post('/api/message', function(req, res) {
 app.post('/api/email', function(req, res) {
 
   var payLoad = JSON.parse(JSON.stringify(req.body));
+  var text = 'Question: ' + payLoad.text + '<br><br>' +
+      'Click the link if this is a rubbish question: ' + process.env.RUBBISH_DOMAIN + encodeURIComponent(payLoad.text);
   emailer.send({
     to: process.env.EMAIL_TO,
     subject: process.env.EMAIL_SUBJECT,
-    text: payLoad.text
+    text: text
   });
+});
+
+// list all rubbish questions
+app.get('/api/list/all', function(req, res) {
+
+  conversationStore.getAllRubbish()
+      .then((rubbishes) => {
+
+        res.render('list', {
+          rubbishes: rubbishes.docs});
+      });
+});
+
+// catches all rubbish questions passed from the email
+app.get('/api/rubbish/:rubbish', function(req, res) {
+
+  conversationStore.addRubbish(req.params.rubbish);
+  res.send(req.params.rubbish + ' added to database.');
 });
 
 /**
